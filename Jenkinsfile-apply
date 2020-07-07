@@ -27,6 +27,7 @@ pipeline {
 --timeout 15s || true'
         sh 'oc rollout status deployment/oauth-openshift \
 -n openshift-authentication -w --timeout 360s'
+         sh while [ -n $(oc get pod -n openshift-authentication -o jsonpath=\{.items[?(@.metadata.deletionTimestamp != )].metadata.name}\) ] ; do sleep 3 ; done
       }
     }
     stage ('Verify test user') {
@@ -34,7 +35,7 @@ pipeline {
         branch 'master'
       }
       steps {
-        sh 'oc login -u testuser -p redhat123 --insecure-skip-tls-verify \
+        sh 'oc login -u developer -p redhat --insecure-skip-tls-verify \
 https://kubernetes.default.svc:443'
         sh 'oc new-project test-testuser || true'
       }
